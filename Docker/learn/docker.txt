@@ -1,0 +1,130 @@
+[IMAGES]
+[build]
+docker build -t [username]:[tag] [directory]
+docker tag [old_image_name]:[old_image_tag] [new_image_name]:[new_image_tag]
+
+[view]
+docker images
+
+[update]
+
+
+[delete]
+docker rmi <image_name>:<image_tag>
+
+[other]
+[inspect]
+docker image inspect [image_name][image_id]
+
+---------------------------------------------------------
+[CONTAINER]
+[create]
+docker run 
+    --rm 
+    --name [container_name] 
+    --network [network_name]
+    
+    -d 
+    -p [exposing_port]:[internal_port] 
+    -e KEY=VALUE 
+
+    -v [name_volume]:[location_to_preserve_in_docker] // to preserve data
+    -v "[location_to_preserve_in_local]:[location_to_preserve_in_docker]:ro" 
+    -v /app/node_modules 
+    -v /app/temp
+    
+	[imagedName]:[imageTag]
+
+[read]
+docker ps
+
+[update]
+docker stop [container_name][container_id]
+docker start [container_name][container_id]
+
+[delete]
+docker rm [container_name][container_id]
+
+[other]
+docker exec -it [container_name][containerId] bash
+
+-----------------------------------------------------------------
+
+[VOLUME]
+ managed by docker
+    // named 
+        volume is preserved  when container stoped
+        -v [location_to_preserve_in_docker] 
+    // anonymus
+        volume is not preserved  when container stoped
+        use to locking the data 
+        -v [name_volume]:[location_to_preserve_in_docker] 
+           
+ managed by user
+    // bind mount
+        -v [location_to_preserve_in_local]:[location_to_preserve_in_docker]:ro
+       
+
+[delete]
+docker volume rm [name_volume]
+
+
+------------------------------------------------------------------
+[NETWORK]
+[create]
+docker newtwork create [newtwork_name]
+
+------------------------------------------------------------------
+DOCKER FILE
+
+
+FROM node:14
+
+WORKDIR /app
+
+COPY package.json .
+
+RUN npm install
+
+COPY . .
+
+EXPOSE 80
+
+ENV MONGODB_USERNAME=username MONGODB_PASSWORD=passowrd
+
+CMD ["npm","start"]
+
+------------------------------------------
+
+# syntax=docker/dockerfile:1
+
+## Build
+FROM golang:1.16-buster AS build
+
+WORKDIR /app
+
+COPY go.mod ./
+COPY go.sum ./
+RUN go mod download
+
+COPY *.go ./
+
+RUN go build -o /docker-gs-ping
+
+## Deploy
+FROM gcr.io/distroless/base-debian10
+
+WORKDIR /
+
+COPY --from=build /docker-gs-ping /docker-gs-ping
+
+EXPOSE 8080
+
+USER nonroot:nonroot
+
+ENTRYPOINT ["/docker-gs-ping"]
+
+
+
+
+
