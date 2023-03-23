@@ -1,0 +1,62 @@
+  [ kube-apiserver ]
+Who  : service account
+What : RBA
+
+communication -
+    [ between pod ] - allow
+    [ disble ]      - network policies
+--------------------------------
+[ kube-apiserver ]
+Admin / Developer / Application End User / Bots
+
+Admin / Developer - > users
+Bot               - > service account
+
+-----------------------------
+[kube-apiserver]
+Admin / Developer :
+    static password - > password in csv files
+    static token file - > token file
+
+----------------------------
+kubeconfig
+[no need to pass the extra parameter because kubeconfig take care of it]
+
+   kubeconfig[file]
+    clusters   [ --server ]
+    contexts   [ user@cluster ]
+    users      [ --client-key , --client-certificate , --certificate-authority ]
+
+---------------------------
+
+API Groups :
+
+--------------------------
+
+Authorization :
+
+Node :
+    Create Policy file
+RBAC:
+    Developer - > assign the role to user
+    Security
+
+Webhooks:
+
+--------------------------
+
+Role Based Access Control
+
+Create Role :
+>> k8 create role <role-name> \
+    --resource <resource1>,<resources2>
+    --verb <verb1><verb2> 
+
+eg :
+>> k8 create role pod-read-access
+    --resource pods 
+    --verb list
+
+
+Role Binding : 
+>> k8 create rolebinding --role <role-name> --serviceaccount default:default 

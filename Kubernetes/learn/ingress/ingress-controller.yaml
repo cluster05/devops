@@ -1,0 +1,35 @@
+# Start Readme 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-ingress-controller
+spec:
+  selector:
+    matchLabels:
+      app: nginx-ingress-controller
+  template:
+    metadata:
+      labels:
+        app: nginx-ingress-controller
+    spec:
+      containers:
+      - name: nginx-ingress-controller
+        image: <image-name> # nginx image specific image 
+        args: 
+          - /nginx-ingress-controller # run nginx controller
+          - --cofigmap=$(POD_NAMESPACE)/<nginx-config-map> # cofigmap to store the path,ssl [config], threshold etc for modify the config in future
+        env:             # [pod ]name name namespace where it deployed to
+          - name: POD_NAME 
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+        ports:    # port for ingress contorller , connect the [ingress service ]
+          - containerPort: 80
+            name: http 
+          - containerPort: 443
+            name: https
+        resources: {}

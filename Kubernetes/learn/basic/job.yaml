@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: my-job
+spec:
+  ttlSecondsAfterFinished: 100
+  completions: 3 # no of job
+  parallelism: 3 #optional
+  template:
+    spec:
+      containers:
+      - name: math-add
+        image: alpine
+        command:
+          - expr
+          - "3"
+          - "+"
+          - "2"
+      restartPolicy: Never

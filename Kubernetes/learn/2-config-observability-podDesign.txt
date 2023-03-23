@@ -1,0 +1,355 @@
+{Command and Argunments}
+=======================
+
+docker [config basic]
+Dockerfile (Container only live once process done)
+
+...
+CMD ["sleep"]
+...
+
+
+[Pod.yaml]
+...
+spec:   
+    container:
+        - ...
+          cammand: ["sleep"]   #in Docker Entrypoint (always present)(Docker)
+          args:["10"]          #in Docker CMD (Docker)
+
+
+
+
+{Enviroment veriable}
+=====================
+
+[Pod.yaml]
+...
+spec:   
+    container:
+        - ...
+          env:
+            - name: <key-name>
+              value: <value-name>
+
+
+        
+{Config map}
+============
+Management is hard that's why
+
+
+Create Config Map :
+>> kubectl create configmap <config-name> 
+    --from-literal=<key>=<value>
+    --from-literal=<key>=<value>
+
+    --from-file=<file-path>
+
+>> kubectl create -f <file-name.yaml>
+
+
+spec:   
+    container:
+        - ...
+          env:
+            - name: <key-name>
+              valueFrom:
+                configMapKeyRef: <config-map-key>
+
+          envFrom:
+            - configMapRef:
+                name: <map-file>
+                key: <map-key>
+
+         volumes:
+            - name: <config-map-name>-volume
+              configMap:
+                name: <config-map-name>  
+
+
+
+
+{Secret }
+==========
+encoded management
+
+create encoded format data:
+>> echo -n '<secret>' | base64
+
+Create Secret :
+>> kubectl create secret <secret-name> 
+    --from-literal=<key>=<value>
+    --from-literal=<key>=<value>
+
+    --from-file=<file-path>
+
+>> kubectl create -f <file-name.yaml>
+
+View Secret : 
+>> kubectl get secrets
+
+View Single Secret
+>> kubectl describe secrets
+    (show attribe but hide value )
+
+>> kubectl describe secrets <secret-name> -o=yaml
+
+spec:   
+    container:
+        - ...
+          env:
+            - name: <key-name>
+              valueFrom:
+                secretKeyRef: 
+                    name: <secret-name>
+                    key: <secret-key>
+          
+          envFrom:
+            - secretRef:
+                name: <secret-name>
+          
+          volume:
+            - name: <some-name>
+              secret:
+                secretName: <secret-name>
+
+
+{scecurity}
+===========
+
+show process
+>> ps aux
+
+
+Create New User
+Dockerfile
+...
+USER "username"
+...
+
+
+Kubernetes New User (Pod Level)
+
+[Pod.yaml]
+...
+spec:   
+    securityContext:
+        runAsUser: "username"
+    container:
+        - ....
+          securityContext:
+            runAsUser: "username"
+            capabilities:
+                add: ["MAC_ADMIN"]
+
+
+{Service Account}
+=================
+Two Account: 
+    User Account (Admin,Developer)
+    Service Account (promeetheus,jenkis)
+
+Create Service Account
+>> kubectl create serviceaccount <service-account-name>
+
+Token is create when we create the service account (use token for API)
+
+view token
+>> kubectl describe secret <service-account-name>
+
+
+[Pod.yaml]
+...
+spec:   
+    serviceAccountName: <service-account-name>
+...
+
+{Resouce Requirement}
+=====================
+
+Exced limit :
+    CPU : trottle
+    Memory : Stop / drop
+
+[Pod.yaml]
+...
+spec:   
+    resource:
+        request:
+            memory: "1Gi"
+            cpu: 1
+        limit:
+            memory: "2Gi"
+            cpu: 2
+...
+
+
+{taint & tolerance}
+===================
+>>kubectl taint node <node-name> <key>=<value> <NoSchedule,PreferNotSchedule,NoExecute>
+
+
+[Pod.yaml]
+...
+spec:   
+    tolerations:
+        - key: "app"
+          oprator: "Equal"
+          value: "blue"
+          effect: "NoSchedule"
+...
+
+{Node Selector}
+================
+
+
+>>kubectl label nodes <node-name> <key>=<value>
+
+[Pod.yaml]
+...
+spec:   
+    nodeSelector:
+        <key>: <value>
+...
+
+
+{Node Affinity}
+===============
+
+
+[Pod.yaml]
+...
+spec:   
+    affinity:
+        nodeAffinity:
+            requiredDuringSchedulingIgnoreDuringExecution: // preferDuringShedulingIngnoreDuringExecution:
+                - matchExpression:
+                    - key : <key>
+                      oprator: In / NotIn / Exists
+                      value:
+                        - <filter>
+                        - <filter>
+...
+
+
+
+{initContainer}
+Initailize container list before this:
+
+
+[Pod.yaml]
+...
+spec:   
+    initContainers:
+        - name ...
+...
+
+
+{Readiness Probs}
+==================
+
+Pod Staus :
+  Pending : Schedular Figure out where to place
+  ContainerCreating : Pull Image
+  Running : Program complete status
+
+Pod Conditions :
+  PodScheduled
+  Initailized
+  ContainerReady : Application in pod is ready
+    Eg. ( Jenkins ) wait to load
+  Ready : 
+
+
+Test : ?
+
+[API]
+[Pod.yaml]
+...
+spec:   
+    container:
+      readinessProbe:
+        httpGet:
+          path: /api/ready
+          port: 8080
+      initailDeplaySeconds: 10
+      periodSeconds: 5
+      failureTreshold: 8 // re-reun x time 
+
+      livenessProbe
+        ... same
+
+...
+
+[TCP]
+[Pod.yaml]
+...
+spec:   
+    container:
+      readinessProbe:
+        tcpSocket:
+          port: 8080
+...
+
+[Exec]
+[Pod.yaml]
+...
+spec:   
+    container:
+      readinessProbe:
+        exec:
+          command:
+            - cat 
+            - /app/is_ready
+...
+
+
+{container logs}
+================
+>>kubectl logs -f <pods-name>
+
+
+{Jobs}
+========
+
+[Pod.yaml]
+...
+spec:   
+    container:
+      restartPolicy: always
+...
+
+
+[Job.yaml]
+
+Create job from file 
+>> kubectl create -f <file-name.yaml>
+
+Get created job
+>> kubectl get Jobs
+
+Output of log 
+>> kubectl logs <pod-name-(job created)>
+
+Delete Job
+>> kubectl delete job <job-name>
+
+
+
+{cron job}
+==========
+  Job can shedule
+
+
+Create job from file 
+>> kubectl create -f <file-name.yaml>
+
+Get created job
+>> kubectl get cronjobs
+
+
+Delete Job
+>> kubectl delete cronjob <job-name>
+
+

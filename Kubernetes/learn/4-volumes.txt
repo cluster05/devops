@@ -1,0 +1,102 @@
+{Volume }
+=========
+    Persiste volume on node with hostpath
+    [imp] 
+        volumeMount:
+            mountPath : /local-path
+            name: <name>
+        (work as bind mount that reflect every time data change)
+
+    injectFrom
+
+    volumes:
+        - name: <name>
+          hostpath:
+            path: /host-path 
+            type: Directory
+
+    ------------------------
+
+    volume:
+        - name : <name>
+          awsElasticBlockStore:
+            volumeID: <volume-Id>
+            fsType: ext4
+
+ [imp]   This storage of data is only specific to node only
+
+{Persistant Volume }:
+====================
+    clusterwise wide pool of storage
+    A persistent volume is a piece of storage in a cluster that an administrator 
+    has provisioned. It is a resource in the cluster, just as a node is a cluster resource.
+    a persistent volume is a volume plug-in that has a lifecycle independent of any 
+    individual pod that uses the persistent volume.
+
+[Pod.yaml]
+...
+spec:
+    containers:
+    volumes:
+        name: <volume-name>
+        persistentVolumeClaim:
+            claimName: my-pvc
+...
+
+
+
+{storage class}
+================
+    Automatically provision storage 
+
+    sc.defination.yaml
+    ---------------------
+
+    apiVersion: storage.k8s.io/v1
+    kind: StorageClass
+    metadata:
+        name: <storage-class-name> 
+    provisioner: kebenetes.io/gce-pd
+
+
+    pvc-defination.yaml
+    -------------------
+    ...
+    metadata:
+        name: <pvc-claim>
+    ...
+    spec:
+        storageClassName: <storage-class-name>
+    ....
+
+    pod.yaml 
+    -------
+    ...
+    spec:
+        containers:
+            ...
+        volumes:
+        - name: <volume-name>
+        persistentVolumeClaim:
+            claimName: <pvc-claim>
+        ...
+
+
+{statefull state}
+===============
+    StatefulSet is the workload API object used to manage stateful applications. 
+    Manages the deployment and scaling of a set of Pods, and provides guarantees 
+    about the ordering and uniqueness of these Pods. Like a Deployment, 
+    a StatefulSet manages Pods that are based on an identical container spec
+
+
+    default | 
+    mysql-0
+    mysql-1
+    mysql-2 ...
+
+    
+
+
+    Headless service:
+    ClusterIp : None

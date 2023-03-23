@@ -1,0 +1,223 @@
+Kubernetes:
+    Kubernetes is purpose to host your application 
+    in automated fashion so that you can easily deploy 
+    as many instance as required and easily enable 
+    communication between different service within application
+
+
+Master : 
+    ETCD  Kube-apiServer Kube-controlManager Kube-Schedular
+
+Worker Node:
+    Kubelet Kube-proxy [ Container Runtime engine(docker,rkt,containerd) ]
+
+Concetps : 
+
+    Cluster : 
+        cluster is set of nodes which may physical or virtual, 
+        On primise or on cloud that host application in form of container 
+
+    Master Node :
+        manage k8 cluster 
+        store different info
+        plannig
+        scheduling 
+        monitoring
+
+        Control plane component:
+            ETCD :
+                Distributed reliable key value pair DB, store all info in control plane
+
+            Kube-apiServer:
+                Primary management component 
+                Monitor state of controller make necessary changes 
+
+
+                            (Authanticatem,validate)
+              >> kubectl     <->  kube-apiServer  <->     ETCD
+                  (utility reach to)      (retrive data from)
+                         
+
+                utility can be envoke by using API 
+                >> curl -x POST /api/v1/namespace/default/...
+
+                Eg :
+                user ->      kube-apisever -> create pod object 
+                1            ^
+                            |         | (create,update,get,delete) all opration entry
+                (schedular monitor)   |
+                                      |
+                                      V
+                                    etcd 
+
+
+            Kube-controlManager:
+                Monitor allocation of new pod, destroy, pod replica
+                Contineously monitor and work to work to acheive functionic state 
+
+                Node Control Manager :
+                    Monitor state of the nodes,takes necessary action to 
+                    keep application running
+                
+                    Monitor Period : 5 s 
+                    Grace Period : 40 s 
+                    Pod Evication Timeout : 5 min 
+
+                Replication Controller :
+                    Ensure desire number of pod always on 
+
+            Kube-schedular:
+                Decide which pod goes on which node 
+                        (doen't acatually place pod on node that done by kubelet)
+                Policy Check
+                Capacity
+                Place right pod on right ship 
+
+                How ? 
+                
+                                    CPU ( 10 )
+
+                (avaliable CPU)    4   4   12  16
+                
+                1 ) filter 
+                2 ) Rank Node - > by Priority Node 
+                        ( Calculate remaining resource [those who has high remaining] )
+
+
+        Worker Node Components :
+
+            Kubelet :
+                load-unload pod as schedular
+                send back report of internal working object to control plane
+
+
+            Kube-proxy :
+                pod internal-communication
+
+                service > virtaul component which live in k8 memory
+
+    Pods : 
+        Contains and run one or more multiple containers
+        pods contain shared resouces(eg volume) for all pod container
+        has cluster internal IP by default
+
+        pods are ephemeral (kubernates start stop and replace)
+
+        Create pod:
+        >> kubectl run <pod-name> --image=<image-name>
+
+        Create Pod from yaml file :
+        >> kubectl create -f <file-name.yaml>
+
+        Get all pod :
+        >> kubectl get pods
+
+        Get single pod info:
+        >> kubectl describe pod <pod-name>
+
+        Update Pod:
+        >> kubectl edit pod <pod-name>
+
+        Update Pod from yaml file:
+        >> kubectl replace -f <file-name.yaml>
+
+        Delete Pod:
+        >> kubectl delete pod <pod-name>
+
+    Controller :
+        Monitor process and respond according
+
+    Replica Controller \  Replica Set (New Tech):
+        High Avalibility
+        Load Balancing & Scaling
+
+        Create Replication from yaml file :
+        >> kubectl create -f <file-name.yaml>
+
+        Get all replica :
+        >> kubectl get replicas
+
+        Get single replica info:
+        >> kubectl describe replicationcontroller/replicaset <replica-name>
+
+        Update replica:
+        >> kubectl edit replicationcontroller/replicaset <replica-name>
+
+        [Scale]
+        >> kubectl scale-replicas=<number> -f <file-name.yaml>
+
+        >>kubectl scale --replicas=<number> replicationcontroller/replicaset <replica-name>
+
+        Update replica from yaml file:
+        >> kubectl replace -f <file-name.yaml>
+
+        Delete replica:
+        >> kubectl delete replicationcontroller/replicaset <replica-name>
+
+    Deployment : 
+        Deployment ( of many instance )
+        New Build upload
+        Rolling Update ( update one by one )
+        Rollback ( due to error )
+
+        Create deployment:
+        >> kubectl create deployment <deployment-name> 
+            --image=<image-name> 
+            --replicas=<number>
+
+        Create deployment from yaml file :
+        >> kubectl create -f <file-name.yaml>
+
+        Get all deployment :
+        >> kubectl get deployment
+
+        Get single deployment info:
+        >> kubectl describe deployment <deployment-name>
+
+        Update deployment:
+        >> kubectl edit deployment <deployment-name>
+
+        >> kubectl set image deployment <deployment-name> <old-container-name>:tag=<new-container-name>:tag
+
+        Update deployment from yaml file:
+        >> kubectl replace -f <file-name.yaml>
+
+        Delete deployment:
+        >> kubectl delete deployment <deployment-name>
+
+        Rollout status:
+        >> kubectl rollout status deployment/<deployment-name>
+
+        Rollout History:
+        >> kubectl rollout history deployment/<deployment-name>
+
+        Undo Rollout:
+        >> kubectl rollout undo deployment/<deployment-name> --to-rivision=<number>
+
+    Namespace:
+        namespaces provides a mechanism for isolating groups 
+        of resources within a single cluster.
+        
+        connect by using service
+            <service-name>
+        from other namespace
+            <service-name>.<namespace>.svc.cluster.local
+                (DNS entry added automatically)
+
+        Get object from other namespace
+        >> kubectl .... --namespace=<namespace-name>
+
+        also default you can add 
+        metadata:
+            namesapce: <namespace-name>
+
+        Create namespace 
+        >> kubectl create namespace <namespace-name>
+
+        Create namespace from yaml file :
+        >> kubectl create -f <file-name.yaml>
+
+        Set Current namespace all time 
+        >>kubectl config set-context $(kubectl config current-context) --namespace=<new-namespace>
+
+        Limit resouces in namespace create resouce quoto

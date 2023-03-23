@@ -1,0 +1,56 @@
+Service:
+    used for external communication
+    map requst from outside to k8
+
+    
+
+    type :
+        ClusterIP : service generate IP for internal service communication
+        NodePort : listing to port and forword request to pod
+        LoadBalancer : provision load balancer for app in supoorted cloud provider 
+    
+    PORT:
+        targetPort: [port on pod]
+        port: [virtaul port on service]
+        nodePort: [expsing port] [ 30_000 - 32_767 ] 
+    
+
+    Create service from yaml file :
+    >> kubectl create -f <file-name.yaml>
+
+    Get all service :
+    >> kubectl get services
+
+    Get single service info:
+    >> kubectl describe service <service-name>
+
+    Update service:
+    >> kubectl edit service <service-name>
+
+    Update service from yaml file:
+    >> kubectl replace -f <file-name.yaml>
+
+    Delete service:
+    >> kubectl delete service <service-name>
+    
+
+{Ingress}
+=========
+Access application using single accessible url
+
+
+[Deployment]  ->  service   --+ 
+                              | --> Inagress -> service -> (port/cloud native LoadBalancer)
+[Deployment]  ->  service   --+ 
+
+
+ 
+
+Ingress Resouce: Ingress based on need
+
+
+{Network Policy}
+==================
+
+
+

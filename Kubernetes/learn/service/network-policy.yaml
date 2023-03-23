@@ -1,0 +1,42 @@
+# pod label
+# labels:
+#   role: db
+
+
+# network policy
+# podSelector:
+#   matchLabels:
+#     role: db
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy 
+metadata:
+  name: db-policy 
+spec:
+  podSelector:
+    matchLabels:
+      role: db
+  policyTypes:
+    - Ingress 
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              name: api-pod 
+          namespaceSelector:
+            matchLabels:
+              name: prod 
+        - ipBlock:
+            cidr: 192.168.5.10/32
+          
+      ports:
+        - protocol: TCP
+          port: 3306
+  egress: # if there is agent in pod that take backup
+    - to: 
+        - ipBlock:
+            cidr: 192.168.5.10/32 
+      ports:
+        - protocol: TCP
+          port: 80

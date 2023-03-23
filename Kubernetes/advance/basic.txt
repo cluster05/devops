@@ -1,0 +1,59 @@
+# Ref : https://vivilearns2code.github.io/k8s/2021/03/11/writing-controllers-for-kubernetes-custom-resources.html
+
+Kubeflow’s Custom Resource Definitions (CRDs) and their respective controllers
+
+Operator : 
+The combination of a CRD with a controller is often called an operator
+
+Creating an Operator
+There are three ways to create an operator: 
+    client-go, 
+        With client-go you start from scratch, 
+    controller-runtime
+        controller-runtime removes some of the manual overhead 
+    kubebuilder. 
+        kubebuilder will automate as much as possible.
+
+Every one of these libraries/frameworks adds an additional layer 
+of abstraction and relies on the library before it. 
+
+
+Baseline client-go : 
+
+  (user build)
+  controller > make request to apiserver of resources 
+        |
+  (observe changes) -> via chaching machanism 
+                            ( why ? )
+                    It is not a good solution for your controller to ping the k8s
+                     apiserver directly, as that would put too much load on it
+
+    --------------------------------------------------------------------------------------------
+    high-level overview
+    --------------------
+
+   update in [k8] -> (receive notification) [informer] 
+                                                (invoke registered event handler and pass object)
+                                |                               |
+                                v                               v
+                                [indexer]                    [evnet handler]
+            retrive object and store and index object    push object key in [workqueue]    
+                inside internal cache                            |
+                                                                 |
+                                                                 v 
+                                                             [controller]
+                                                    pop key from there read object
+
+Define your [CRD]
+When we define our CRD in golang, we follow the same structure:
+
+    TypeMeta - Group/Version and Kind fields apiVersion and kind
+    ObjectMeta - Standard k8s metadata fields like name, namespace
+    Spec - Your custom fields
+    Status - Optional status subresource with custom fields
+
+
+libraries
+    clinet-go      (k8.io/clientgo) expose interface that used by client to talk to  k8 
+    api-library    (api - types maintained)
+    api-machinary  (common code \ utility methods)
