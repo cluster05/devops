@@ -1,0 +1,122 @@
+Helm : 
+    Helm is package manager for kubernetes
+
+Search Helm Chart 
+>> helm search hub
+
+Specific 
+>> helm search hub <chart-name>
+
+Install Chart ( Must add Repository )
+Artifact Hub.com 
+
+>> helm repo add <chart-repo-name> <url>
+
+View Install Repository
+>> helm repo list 
+
+>> helm search repo 
+
+>> helm search repo <chart-name> 
+
+Install chart 
+>> helm install 
+--set <newkey>=<newvalue> or 
+-f filename.yaml or 
+--reset-values (to reset values)
+ <repo/chart-name> <repositoty>
+
+>> helm list 
+
+>> helm status <chart-name> 
+
+>> helm upgrade <chart-name> upgrade 
+
+>> helm rollback <chart-name> reivison
+
+>> helm uninstall <chart-name> 
+
+>> helm show values <repo/chart-name> 
+
+
+Folder Structure : 
+
+    template : 
+    all the yaml file 
+
+    folder :
+        test : * pre hooks * run before kubernetes run 
+            if run then deploy
+            if fail helm not deploy
+
+            why : 
+                eg : verify password
+                    trigger services
+
+        _helpers.tpl : write function 
+                repeatative code
+        
+        notes.txt : display as output when k8 deploy
+        chart.yaml : metadata of helm 
+        value.yaml : values to stored at center
+
+--------------------------------------------------------------
+
+# Create and lint
+create new helm chart
+>> helm create <chart-name>
+
+>> helm package <file-name> 
+
+>> helm install <helm-name> ./file-name.gz
+
+>> helm repo index . --url <target-repo> 
+
+link yaml file
+>> helm lint <folder-path>
+
+
+# Install & debug 
+
+debug yaml
+>> helm install <chart-name> --dry-run --debug [--generate-name] <folder-path>
+
+Install 
+>> helm install <chart-name> <folder-path>  [--set <value-path>=<value-to-set>]
+
+View Release
+>> helm list
+
+
+----------------------------------------------------------
+
+#Object :
+Object is combination of data and procedures working on the 
+avaliable data 
+
+Object are passed into a template from the template engine 
+
+    build in Object
+    Release : 
+
+       {{ - define "function-from-_helper.yaml" - }} 
+
+    Chart: 
+
+        .Chart.<chart-key>
+
+    File:
+
+        notes.txt
+        eg : import config
+
+            filename : config.ini
+                        key value 
+            
+            filename : config.yaml
+                        data:
+                            {{ .Files.Get <filename> }}
+                    
+    Values :
+
+        {{ .Values.<value-key-path> }}
