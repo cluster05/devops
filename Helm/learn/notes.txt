@@ -17,7 +17,13 @@ View Install Repository
 
 >> helm search repo 
 
->> helm search repo <chart-name> 
+>> helm search repo <reponame>/<chartname
+
+
+View All version
+>> helm search repo <reponame>/<chartname> --versions
+
+ 
 
 Install chart 
 >> helm install 

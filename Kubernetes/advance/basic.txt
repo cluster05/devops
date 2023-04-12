@@ -57,3 +57,67 @@ libraries
     clinet-go      (k8.io/clientgo) expose interface that used by client to talk to  k8 
     api-library    (api - types maintained)
     api-machinary  (common code \ utility methods)
+
+---------------------------------------------------------------------------------------------------------
+
+Custom controller 
+    In Kubernetes, controllers are control loops that watch the state of your cluster, 
+    then make or request changes where needed. Each controller tries
+    to move the current cluster state closer to the desired state.
+
+Informer
+    Informers query the resource data and store it in a local cache. 
+    Once stored, an event is only generated when it detects a change in the object 
+   
+
+    ```
+
+    clientset , err := kubenetes.NewForConfig(config)
+
+    // cache is re-synced after 30 second
+    informerfacory := informers.NewSharedInformaerFactory(clientset,time.second*30)
+
+    podinformer := informerfacory.Core().V1().Pods()
+    podinformer.Informer().AddEventHandler(cache.ResourceEvnetHandlerFuncs{
+        AddFunc:func(new interface{}){}
+        UpdateFunc:func(new interface{}){}
+        DeleteFunc:func(new interface{}){}
+    })
+
+    podinformer.Start(wait.NeverStop)
+    podinformer.WaitForCacheSync(wait.NeverStop)
+
+    ```
+
+Shared Informer
+    client-go provides a Shared Informer which is used so that the cache is shared 
+    amongst all controllers. Every built-in Kubernetes resource has an Informer.
+
+    More on  : https://aly.arriqaaq.com/kubernetes-informers/
+
+Indexer 
+    It is the local storage implemented by client-go, keeping consistent with the etcd,
+     reducing the pressure of the API Server and etcd.
+
+    Indexer: An indexer provides indexing functionality over objects.
+    A typical indexing use-case is to create an index based on object labels.
+    Indexer can maintain indexes based on several indexing functions. 
+    Indexer uses a thread-safe data store to store objects and their keys.
+
+Convert GVK ( Group Version Kind ) to GVR ( Group Version Resource ) 
+
+    RestMapper interface{
+        KindFor      : GVR -> GVK
+        RestMapping  : GVK -> GVR 
+        ....
+    }
+
+Scheme
+    If we want to treate Golang Struct as GVK then Scheme is used 
+
+    Note : if only work if kubenetes object type register ( CR )
+
+
+Go Struct         -------->  Scheme ( GVK )  --------> RestMapping ( GVR ) --------> HTTP ( path )
+
+[Add Know type]           
